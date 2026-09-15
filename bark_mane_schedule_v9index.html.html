@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bark &amp; Mane — Zone Rotation Calendar v9</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#f4f6f4;color:#333;}
+.header{background:#006842;padding:18px 24px;color:#fff;}
+.header-top{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.65;margin-bottom:4px;}
+.header h1{font-family:'DM Serif Display',serif;font-size:26px;font-weight:400;line-height:1.1;}
+.header-meta{display:flex;gap:16px;align-items:center;margin-top:6px;flex-wrap:wrap;}
+.version{font-size:11px;background:rgba(255,255,255,.15);padding:2px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.3);}
+.tagline{font-size:11px;opacity:.7;font-style:italic;}
+.section{padding:16px 24px;max-width:1200px;margin:0 auto;}
+.today-card{background:#fff;border-radius:12px;padding:16px 20px;border:1px solid #e0e0e0;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:16px;}
+.today-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#999;margin-bottom:6px;}
+.today-date{font-size:16px;font-weight:700;color:#1a1a1a;}
+.today-wk{display:inline-block;font-size:10px;background:#fef9c3;color:#b45309;padding:2px 10px;border-radius:10px;font-weight:700;margin-left:8px;vertical-align:middle;}
+.today-zones{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;}
+.tz{border-radius:8px;padding:10px 12px;border:1px solid;}
+.tz-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.tz-name{font-size:14px;font-weight:700;}
+.zone-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.zc{border-radius:8px;overflow:hidden;border:1px solid;}
+.zc-inner{padding:10px 13px;}
+.zc-label{font-size:15px;font-weight:800;margin-bottom:2px;}
+.zc-zips{font-size:10px;opacity:.8;line-height:1.5;}
+.how{background:#fff;border-radius:12px;padding:16px 20px;border:1px solid #e0e0e0;margin-bottom:16px;font-size:12px;line-height:1.7;color:#444;}
+.how h3{font-size:12px;font-weight:700;color:#006842;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+.how p{margin-bottom:8px;}
+.how p:last-child{margin-bottom:0;}
+.controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
+.filter-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.fbtn{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid #ddd;background:#fff;color:#555;cursor:pointer;font-weight:500;transition:all .15s;}
+.fbtn:hover{border-color:#bbb;background:#f8f8f8;}
+.fbtn.on{font-weight:700;}
+.nav{display:flex;align-items:center;gap:10px;}
+.nav-btn{width:34px;height:34px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;}
+.nav-btn:hover:not(:disabled){background:#f1f5f9;}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;}
+.month-label{font-size:18px;font-weight:700;min-width:180px;text-align:center;}
+.day-hdrs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:4px;}
+.dh{text-align:center;font-size:11px;font-weight:600;color:#999;padding:4px 0;text-transform:uppercase;letter-spacing:.5px;}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:20px;}
+.cell{background:#fff;border-radius:10px;padding:8px;min-height:120px;border:1px solid #e8e8e8;display:flex;flex-direction:column;}
+.cell.prior{background:#f9fafb;}
+.cell.open-v{background:#fffbf0;border:1px dashed #f59e0b;}
+.cell.today{border:2px solid #006842 !important;box-shadow:0 0 0 3px rgba(0,104,66,.12);}
+.cell.wk1{border-color:#a7f3d0;}
+.cell.wk2{border-color:#fde68a;}
+.cell.dim{opacity:.28;}
+.daynum{font-size:14px;font-weight:700;color:#333;display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.wkb{font-size:7px;font-weight:700;padding:1px 5px;border-radius:3px;}
+.vr{display:flex;align-items:center;margin-bottom:2px;}
+.vz{font-size:8px;font-weight:800;padding:2px 4px;border-radius:4px 0 0 4px;min-width:17px;text-align:center;flex-shrink:0;}
+.vg{font-size:10px;font-weight:600;padding:2px 6px;border-radius:0 4px 4px 0;white-space:nowrap;}
+.vo{font-size:9px;color:#b45309;font-style:italic;padding:2px 5px;border-radius:0 4px 4px 0;}
+.prior-tag{font-size:8px;color:#bbb;font-style:italic;margin-top:2px;}
+.tbl-section{background:#fff;border-radius:12px;padding:16px 20px;border:1px solid #e0e0e0;margin-bottom:16px;}
+.tbl-section h3{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+.tbl-section .sub{font-size:11px;color:#888;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{text-align:left;padding:7px 8px;font-weight:600;color:#999;border-bottom:2px solid #e8e8e8;text-transform:uppercase;letter-spacing:.4px;font-size:9px;}
+td{padding:7px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.gname{font-weight:700;}
+.zhit{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;display:inline-block;}
+.zhit.full{background:#dcfce7;color:#166534;}
+.zhit.repeat{background:#fef9c3;color:#b45309;}
+.dz{font-family:monospace;font-size:10px;color:#555;letter-spacing:.3px;}
+.wknd{font-size:10px;color:#666;}
+footer{text-align:center;padding:16px 24px 32px;font-size:11px;color:#aaa;line-height:1.6;}
+@media(max-width:700px){.today-zones,.zone-cards{grid-template-columns:repeat(2,1fr);}.cell{min-height:92px;padding:5px;}.vg{font-size:9px;}table{font-size:10px;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">Bark &amp; Mane · Mobile Grooming Fleet</div>
+  <h1>Zone Rotation Calendar</h1>
+  <div class="header-meta">
+    <span class="version">v9 · updated September 15, 2026</span>
+    <span class="tagline">groomers rotate zones day to day, not week to week</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="today-card" id="todayCard"></div>
+  <div class="zone-cards" id="zoneCards"></div>
+  <div class="how">
+    <h3>How the rotation works</h3>
+    <p>Zones now rotate within the week, not just cycle to cycle. Every groomer who works 3–4 days sees a different zone on most of those days instead of sitting in one zone all week. Work days and weekend coverage are unchanged — only which zone each day lands in.</p>
+    <p>Week 1 lands perfectly: all eight groomers hit a fresh zone every single working day, zero repeats. Week 2 is nearly as clean — the only repeat is Katie, who lands in Zone D twice (Sunday and Saturday) because that's the one open seat left once everyone else's coverage is locked in. That's the kind of trade-off you said was fine — duplicate only when it's the only way to keep all four zones covered.</p>
+    <p><strong>Swap note:</strong> Sierra and Katie's day patterns are unchanged from before. <strong>Open van note:</strong> Zone B is still the intentional open seat on Friday of Week 2 — three vans run that day instead of four.</p>
+  </div>
+
+  <div class="controls">
+    <div class="filter-row" id="filterRow"></div>
+    <div class="nav">
+      <button class="nav-btn" id="prevBtn" onclick="changeMonth(-1)">&#8249;</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button class="nav-btn" id="nextBtn" onclick="changeMonth(1)">&#8250;</button>
+    </div>
+  </div>
+  <div class="day-hdrs" id="dayHdrs"></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="tbl-section">
+    <h3>Weekly zone spread</h3>
+    <div class="sub">Zones each groomer lands in, in day order — a repeated letter is a duplicate.</div>
+    <table id="spreadTable"></table>
+  </div>
+
+  <div class="tbl-section">
+    <h3>Groomer summary</h3>
+    <div class="sub">Day-of-week pattern is unchanged — the zone letter next to each day is what's new.</div>
+    <table id="summaryTable"></table>
+  </div>
+</div>
+
+<footer>Bark &amp; Mane Premium Mobile Pet Grooming — internal scheduling reference.<br>Zone territories are fixed by zip code; groomers rotate through them day to day within each week.</footer>
+
+<script>
+const ANCHOR = new Date(2026, 4, 31);
+const TODAY = new Date(2026, 8, 15);
+
+// zone-ordered: [Zone A, Zone B, Zone C, Zone D]
+const SCHED = [
+  ['Rachel','India','Jana','Katie'],
+  ['India','Katie','Ana','Sierra'],
+  ['Sierra','Ana','Nayeli','Jessi'],
+  ['Nayeli','Jana','Jessi','India'],
+  ['Jana','Jessi','Rachel','Nayeli'],
+  ['Katie','Rachel','India','Ana'],
+  ['Ana','Sierra','Katie','Rachel'],
+  ['Rachel','Ana','Sierra','Katie'],
+  ['Katie','Sierra','Jana','India'],
+  ['India','Jessi','Nayeli','Jana'],
+  ['Ana','Nayeli','India','Jessi'],
+  ['Nayeli','Rachel','Jessi','Ana'],
+  ['Sierra',null,'Katie','Rachel'],
+  ['Jana','India','Rachel','Katie'],
+];
+
+const ZL = ['A','B','C','D'];
+const ZBG = ['#fff7ed','#eff6ff','#f0fdf4','#fdf4ff'];
+const ZTX = ['#c2410c','#1d4ed8','#15803d','#7e22ce'];
+const ZBD = ['#fb923c','#93c5fd','#86efac','#d8b4fe'];
+const ZZIPS = ['27312, 27523, 27517, 27713','27502, 27539, 27540, 27526','27519, 27513, 27560','27511, 27518, 27606'];
+
+const GC = {
+  Rachel:{bg:'#dcfce7',tx:'#166534'}, Nayeli:{bg:'#ede9fe',tx:'#5b21b6'},
+  India:{bg:'#fee2e2',tx:'#991b1b'},  Ana:{bg:'#fef9c3',tx:'#854d0e'},
+  Sierra:{bg:'#fce7f3',tx:'#9d174d'}, Jana:{bg:'#e0f7fa',tx:'#006064'},
+  Jessi:{bg:'#fff8e1',tx:'#e65100'},  Katie:{bg:'#fbe9e7',tx:'#bf360c'},
+};
+const ALL = ['Rachel','Nayeli','India','Ana','Sierra','Jana','Jessi','Katie'];
+const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOWF = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+let curY = 2026, curM = 8, sel = null;
+
+function dfa(d){const a=new Date(ANCHOR.getFullYear(),ANCHOR.getMonth(),ANCHOR.getDate());const b=new Date(d.getFullYear(),d.getMonth(),d.getDate());return Math.round((b-a)/86400000);}
+function getDay(d){const diff=dfa(d);if(diff<0)return null;const pos=diff%14;return{pos,wk:pos<7?1:2,g:SCHED[pos]};}
+function same(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+
+// TODAY CARD
+(function(){
+  const d=getDay(TODAY);
+  const zones=d.g.map((g,i)=>`<div class="tz" style="background:${ZBG[i]};border-color:${ZBD[i]};"><div class="tz-label" style="color:${ZTX[i]};">Zone ${ZL[i]}</div><div class="tz-name" style="color:${g?ZTX[i]:'#b45309'};">${g||'Open'}</div></div>`).join('');
+  document.getElementById('todayCard').innerHTML=`<div class="today-label">Today</div><div class="today-date">${DOWF[TODAY.getDay()]}, ${MN[TODAY.getMonth()]} ${TODAY.getDate()}, ${TODAY.getFullYear()}<span class="today-wk">Week ${d.wk}</span></div><div class="today-zones">${zones}</div>`;
+})();
+
+// ZONE CARDS
+document.getElementById('zoneCards').innerHTML=ZL.map((l,i)=>`<div class="zc" style="border-color:${ZBD[i]};"><div class="zc-inner" style="background:${ZBG[i]};"><div class="zc-label" style="color:${ZTX[i]};">Zone ${l}</div><div class="zc-zips" style="color:${ZTX[i]};">${ZZIPS[i]}</div></div></div>`).join('');
+
+// FILTER
+function buildFilter(){
+  document.getElementById('filterRow').innerHTML=
+    `<button class="fbtn${sel===null?' on':''}" onclick="setSel(null)" style="${sel===null?'background:#006842;color:#fff;border-color:#006842;':''}">All</button>`+
+    ALL.map(g=>{const c=GC[g],on=sel===g;return`<button class="fbtn${on?' on':''}" onclick="setSel('${g}')" style="${on?`background:${c.bg};color:${c.tx};border-color:${c.tx};`:''}">${g}</button>`;}).join('');
+}
+function setSel(g){sel=g;buildFilter();buildGrid();}
+
+// GRID
+function buildGrid(){
+  document.getElementById('monthLabel').textContent=`${MN[curM]} ${curY}`;
+  document.getElementById('dayHdrs').innerHTML=WD.map(d=>`<div class="dh">${d}</div>`).join('');
+  const fd=new Date(curY,curM,1).getDay(),dim=new Date(curY,curM+1,0).getDate();
+  let cells='';
+  for(let i=0;i<fd;i++)cells+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const dt=new Date(curY,curM,d),info=getDay(dt),isNew=dfa(dt)>=0,isT=same(dt,TODAY);
+    const isOpen=info&&info.g.includes(null);
+    const hit=sel&&info&&info.g.includes(sel),dim=sel&&info&&!info.g.includes(sel);
+    let cls='cell',extra='';
+    if(isT)cls+=' today';
+    else if(!isNew)cls+=' prior';
+    else if(isOpen)cls+=' open-v';
+    else if(info)cls+=info.wk===1?' wk1':' wk2';
+    if(hit)extra=`border:2px solid ${GC[sel].tx};background:${GC[sel].bg};`;
+    if(dim)cls+=' dim';
+    let inner;
+    if(!isNew){inner=`<div class="daynum" style="color:#ccc;">${d}</div><div class="prior-tag">prior</div>`;}
+    else{
+      const wbg=info.wk===1?'#dcfce7':'#fef9c3',wtx=info.wk===1?'#166534':'#b45309';
+      const wb=`<span class="wkb" style="background:${wbg};color:${wtx};">W${info.wk}</span>`;
+      const rows=info.g.map((g,i)=>{
+        const zs=`<span class="vz" style="background:${ZBG[i]};color:${ZTX[i]};">${ZL[i]}</span>`;
+        if(!g)return`<div class="vr">${zs}<span class="vo" style="background:${ZBG[i]};">open</span></div>`;
+        return`<div class="vr">${zs}<span class="vg" style="background:${ZBG[i]};color:${ZTX[i]};${sel===g?'font-weight:800;':''}">${g}</span></div>`;
+      }).join('');
+      inner=`<div class="daynum">${d}${wb}</div>${rows}`;
+    }
+    cells+=`<div class="${cls}" style="${extra}">${inner}</div>`;
+  }
+  document.getElementById('grid').innerHTML=cells;
+  document.getElementById('prevBtn').disabled=curM===0;
+  document.getElementById('nextBtn').disabled=curM===11;
+}
+function changeMonth(dir){curM+=dir;if(curM<0)curM=0;if(curM>11)curM=11;buildGrid();}
+
+// TABLES
+function zoneList(g,start,end){
+  const out=[];
+  for(let i=start;i<end;i++){const idx=SCHED[i].indexOf(g);if(idx>=0)out.push({day:WD[i%7],z:ZL[idx]});}
+  return out;
+}
+function buildTables(){
+  let spread='<tr><th>Groomer</th><th>Week 1</th><th>Zones hit</th><th>Week 2</th><th>Zones hit</th></tr>';
+  let summary='<tr><th>Groomer</th><th>Week 1 days</th><th>Week 2 days</th><th>Wk1</th><th>Wk2</th><th>Weekend</th></tr>';
+  const weekend={Rachel:'Every week',Katie:'Every week',India:'Wk1 on, Wk2 on'};
+  ALL.forEach(g=>{
+    const w1=zoneList(g,0,7),w2=zoneList(g,7,14);
+    const u1=new Set(w1.map(x=>x.z)).size,u2=new Set(w2.map(x=>x.z)).size;
+    const r1=w1.length-u1,r2=w2.length-u2;
+    const hit1=`<span class="zhit ${r1?'repeat':'full'}">${u1} of ${w1.length}${r1?' ('+r1+' repeat)':''}</span>`;
+    const hit2=`<span class="zhit ${r2?'repeat':'full'}">${u2} of ${w2.length}${r2?' ('+r2+' repeat)':''}</span>`;
+    const d1=w1.map(x=>`${x.day}:${x.z}`).join(' '),d2=w2.map(x=>`${x.day}:${x.z}`).join(' ');
+    spread+=`<tr><td class="gname" style="color:${GC[g].tx};">${g}</td><td class="dz">${d1}</td><td>${hit1}</td><td class="dz">${d2}</td><td>${hit2}</td></tr>`;
+    const s1=w1.map(x=>`${x.day}·${x.z}`).join(' '),s2=w2.map(x=>`${x.day}·${x.z}`).join(' ');
+    summary+=`<tr><td class="gname" style="color:${GC[g].tx};">${g}</td><td class="dz">${s1}</td><td class="dz">${s2}</td><td style="text-align:center;font-weight:600;">${w1.length}</td><td style="text-align:center;font-weight:600;">${w2.length}</td><td class="wknd">${weekend[g]||'—'}</td></tr>`;
+  });
+  document.getElementById('spreadTable').innerHTML=spread;
+  document.getElementById('summaryTable').innerHTML=summary;
+}
+
+buildFilter();buildGrid();buildTables();
+</script>
+</body>
+</html>
